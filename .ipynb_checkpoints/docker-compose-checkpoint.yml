@@ -1,7 +1,7 @@
 services:
   # Entorno de trabajo con Python y Spark pre-instalado
-  jupyter:
-    build: .
+  workspace:
+    image: jupyter/pyspark-notebook:latest
     container_name: bigdata_workspace
     ports:
       - "8888:8888" # Jupyter Lab
