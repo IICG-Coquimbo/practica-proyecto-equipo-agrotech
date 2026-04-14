@@ -1,0 +1,26 @@
+services:
+  # Entorno de trabajo con Python y Spark pre-instalado
+  workspace:
+    image: jupyter/pyspark-notebook:latest
+    container_name: bigdata_workspace
+    ports:
+      - "8888:8888" # Jupyter Lab
+      - "4040:4040" # Panel de control de Spark
+    volumes:
+      - .:/home/jovyan/work
+    environment:
+      - JUPYTER_TOKEN=
+      - JUPYTER_PASSWORD=""
+      - JUPYTER_ALLOW_INSECURE_WRITES=true
+
+  # Base de Datos NoSQL
+  database:
+    image: mongo:latest
+    container_name: bigdata_mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:
