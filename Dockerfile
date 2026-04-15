@@ -1,13 +1,9 @@
-
-
-# Imagen base: trae Jupyter + Python + PySpark ya configurado
+# Imagen base con Jupyter + PySpark
 FROM jupyter/pyspark-notebook:latest
 
 USER root
 
-# 1. Actualiza repositorios e instala herramientas básicas + Google Chrome
 # Instala entorno visual, supervisor y Chrome
->>>>>>> 485ee9a1aaeac23febbe254e844320d427e7b398
 RUN apt-get update && apt-get install -y \
     wget \
     curl \
@@ -34,6 +30,16 @@ RUN apt-get update && apt-get install -y \
 # Instala librerías Python para scraping y MongoDB
 RUN pip install selenium pymongo webdriver-manager pandas
 
+# Descarga el conector MongoDB-Spark compatible con Spark 3.5
+RUN wget -P /usr/local/spark/jars/ \
+    https://repo1.maven.org/maven2/org/mongodb/spark/mongo-spark-connector_2.12/10.3.0/mongo-spark-connector_2.12-10.3.0.jar && \
+    wget -P /usr/local/spark/jars/ \
+    https://repo1.maven.org/maven2/org/mongodb/mongodb-driver-sync/4.11.1/mongodb-driver-sync-4.11.1.jar && \
+    wget -P /usr/local/spark/jars/ \
+    https://repo1.maven.org/maven2/org/mongodb/mongodb-driver-core/4.11.1/mongodb-driver-core-4.11.1.jar && \
+    wget -P /usr/local/spark/jars/ \
+    https://repo1.maven.org/maven2/org/mongodb/bson/4.11.1/bson-4.11.1.jar
+
 # Variables del entorno gráfico
 ENV DISPLAY=:99
 ENV SCREEN_WIDTH=1366
@@ -50,34 +56,12 @@ RUN sed -i 's/\r$//' /usr/local/bin/start-vnc.sh && chmod +x /usr/local/bin/star
 # Puertos del contenedor
 EXPOSE 8888 5900 6080 4040
 
+# Verifica que noVNC esté en la ruta correcta
+RUN ln -sf /usr/share/novnc/vnc.html /usr/share/novnc/index.html \
+    && which websockify || echo "websockify no encontrado"
+
+
 # Inicia supervisord
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
-=======
-# 1. Instalar dependencias base y configurar el repo de Google Chrome
-RUN apt-get update && apt-get install -y wget gnupg2 curl && \
-    wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
-    echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
 
-# 2. Instalar Google Chrome y librerías de soporte
-RUN apt-get update && apt-get install -y \
-    google-chrome-stable \
-    libnss3 \
-    libgbm1 \
-    libasound2 && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# 2. Instala librerías de Python necesarias
-RUN pip install selenium pymongo webdriver-manager
-
-# Vuelve al usuario normal de Jupyter (buena práctica de seguridad)
-USER jovyan
-=======
-    libasound2 \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# 3. Instalar librerías de Python
-RUN pip install selenium pymongo webdriver-manager
-
-# Vuelve al usuario normal de Jupyter (buena pr�ctica de seguridad)
-USER jovyan
-
+RUN ln -sf /usr/bin/python3 /usr/bin/python
