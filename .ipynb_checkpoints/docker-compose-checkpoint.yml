@@ -16,7 +16,7 @@ workspace:
   # Base de Datos NoSQL
   database:
     image: mongo:latest
-    container_name: bigdata_workspace
+    container_name: bigdata_mongodb
     ports:
       - "27017:27017"
     volumes:

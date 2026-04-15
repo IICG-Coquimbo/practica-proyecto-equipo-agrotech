@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 FROM jupyter/pyspark-notebook:latest
 
 USER root
@@ -20,3 +21,12 @@ RUN apt-get update && apt-get install -y \
 RUN pip install selenium pymongo webdriver-manager
 
 USER jovyan
+=======
+
+
+
+copy con Dockerfile
+cd C:\Users\sebas\OneDrive\Escritorio\Clase Big Data\BigData_IICG_2026\AgroTech
+cd C:\Users\sebas\OneDrive\Escritorio\Clase Big Data\BigData_IICG_2026\AgroTech
+cls
+>>>>>>> 485ee9a1aaeac23febbe254e844320d427e7b398
