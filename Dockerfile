@@ -1,45 +1,13 @@
-<<<<<<< HEAD
-# Imagen base: trae Jupyter + Python + PySpark ya configurado
-FROM jupyter/pyspark-notebook:latest
-
-# Cambia al usuario administrador (root) para poder instalar programas
-USER root
-
-# 1. Actualiza repositorios e instala herramientas básicas, instala Google Chrome y librerías necesarias
-=======
-<<<<<<< HEAD
 # Imagen base con Jupyter + PySpark
-=======
->>>>>>> feature/Sebastian-Castillo
 FROM jupyter/pyspark-notebook:latest
 
 USER root
 
-<<<<<<< HEAD
 # Instala entorno visual, supervisor y Chrome
->>>>>>> 485ee9a1aaeac23febbe254e844320d427e7b398
 RUN apt-get update && apt-get install -y \
     wget \
     curl \
     gnupg \
-<<<<<<< HEAD
-    ca-certificates && \
-    mkdir -p /etc/apt/keyrings && \
-    wget -qO- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /etc/apt/keyrings/google-chrome.gpg && \
-    echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list && \
-    apt-get update && \
-    apt-get install -y \
-    google-chrome-stable \
-    libnss3 \
-    libgbm1 \
-    libasound2 && \
-    apt-get clean && rm -rf /var/lib/apt/lists/*
-# 2. Instala librerías de Python necesarias
-RUN pip install selenium pymongo webdriver-manager
-
-# Vuelve al usuario normal de Jupyter (buena práctica de seguridad)
-USER jovyan
-=======
     ca-certificates \
     xvfb \
     fluxbox \
@@ -80,24 +48,7 @@ EXPOSE 8888 5900 6080 4040
 
 # Inicia supervisord
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
-=======
-# 1. Instalar dependencias base y configurar el repo de Google Chrome
-RUN apt-get update && apt-get install -y wget gnupg2 curl && \
-    wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - && \
-    echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list
 
-# 2. Instalar Google Chrome y librerÃ­as de soporte
-RUN apt-get update && apt-get install -y \
-    google-chrome-stable \
-    libnss3 \
-    libgbm1 \
-    libasound2 \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
-
-# 3. Instalar librerÃ­as de Python
-RUN pip install selenium pymongo webdriver-manager
-
-# Vuelve al usuario normal de Jupyter (buena prï¿½ctica de seguridad)
 USER jovyan
->>>>>>> feature/Sebastian-Castillo
->>>>>>> 485ee9a1aaeac23febbe254e844320d427e7b398
+
+
