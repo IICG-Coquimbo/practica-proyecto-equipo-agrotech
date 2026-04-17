@@ -48,3 +48,4 @@ services:
 # Volumen persistente para MongoDB
 volumes:
   mongo_data:
+
