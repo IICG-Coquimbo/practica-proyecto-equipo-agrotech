@@ -48,3 +48,5 @@ EXPOSE 8888 5900 6080 4040
 
 # Inicia supervisord
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
+
+USER jovyan
