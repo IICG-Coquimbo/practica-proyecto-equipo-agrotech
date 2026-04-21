@@ -1,50 +1,58 @@
+version: "3.9"
+
 services:
   # Contenedor principal con Jupyter, Spark y entorno visual
   workspace:
-    build: .                      # Construye la imagen usando el Dockerfile local
+    build: .
     container_name: bigdata_workspace
 
+    command: jupyter notebook --ip=0.0.0.0 --port=8888 --allow-root --no-browser
+
     ports:
-      - "8888:8888"               # Jupyter Lab
-      - "4040:4040"               # Interfaz web de Spark
-      - "5900:5900"               # Acceso VNC al escritorio
-      - "6080:6080"               # Acceso noVNC desde navegador
+      - "8888:8888"   # Jupyter
+      - "4040:4040"   # Spark UI
+      - "5900:5900"   # VNC
+      - "6080:6080"   # noVNC
 
     volumes:
-      - .:/home/jovyan/work       # Monta la carpeta del proyecto dentro del contenedor
+      - .:/home/jovyan/work
 
     environment:
-      - JUPYTER_TOKEN=            # Desactiva token de acceso
-      - JUPYTER_PASSWORD=         # Desactiva contraseña
-      - JUPYTER_ALLOW_INSECURE_WRITES=true  # Permite escritura en volúmenes montados
-      - DISPLAY=:99               # Pantalla virtual usada por el entorno gráfico
+      - JUPYTER_TOKEN=
+      - JUPYTER_PASSWORD=
+      - JUPYTER_ALLOW_INSECURE_WRITES=true
+      - DISPLAY=:99
 
-    shm_size: "2gb"               # Evita fallos del navegador por poca memoria compartida
+    shm_size: "2gb"
 
-  # Contenedor de base de datos MongoDB
+    dns:
+      - 8.8.8.8   # Arregla problemas de conexión a internet
+
+  # Base de datos MongoDB
   database:
     image: mongo:latest
     container_name: bigdata_mongodb
 
     ports:
-      - "27017:27017"             # Puerto de MongoDB
+      - "27017:27017"
 
     volumes:
-      - mongo_data:/data/db       # Guarda los datos de forma persistente
-      
-    # EL SERVICIO QUE FALTA PARA EL PUERTO 8081
+      - mongo_data:/data/db
+
+  # Interfaz web para MongoDB (mongo-express)
   admin-db:
     image: mongo-express:latest
     container_name: bigdata_ui
     restart: always
+
     ports:
       - "8081:8081"
+
     environment:
-      # Se conecta al servicio 'database' definido arriba
       - ME_CONFIG_MONGODB_URL=mongodb://database:27017/
+
     depends_on:
       - database
-      
-# Volumen persistente para MongoDB
+
 volumes:
   mongo_data:
