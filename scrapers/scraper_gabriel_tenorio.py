@@ -24,24 +24,13 @@ warnings.filterwarnings('ignore')
 
 # Configuración del scraper
 CONFIG = {
-    "integrante": "gabriel tenorio",
     "region_id": 5,
     "comuna_id": 4102,
     "estacion_id": 327
 }
-
 # Mapeo de número de mes a nombre en español
-MESES_ES = {
-    "01": "Enero", "02": "Febrero", "03": "Marzo", "04": "Abril",
     "05": "Mayo", "06": "Junio", "07": "Julio", "08": "Agosto",
     "09": "Septiembre", "10": "Octubre", "11": "Noviembre", "12": "Diciembre"
-}
-
-
-def mes_a_nombre(fecha_hora_str):
-    """Convierte 'DD-MM-YYYY HH:MM' al nombre del mes en español."""
-    try:
-        return MESES_ES.get(fecha_hora_str[3:5], fecha_hora_str)
     except (IndexError, TypeError):
         return fecha_hora_str
 
