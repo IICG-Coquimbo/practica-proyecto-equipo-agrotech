@@ -23,7 +23,7 @@ services:
     ports:
       - "8081:8081"   # Mongo Express
     environment:
-      - ME_CONFIG_MONGODB_URL=mongodb+srv://usuario:password@cluster0.kthdyh1.mongodb.net/?retryWrites=true&w=majority
+      - ME_CONFIG_MONGODB_URL=mongodb+srv://agrotech_sebastiancastillo:agrotechbigdata2026@cluster0.7z77rka.mongodb.net/BigData_UCN?retryWrites=true&w=majority
       - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
       - VC_NODE_TLS_REJECT_UNAUTHORIZED=0
     dns:
