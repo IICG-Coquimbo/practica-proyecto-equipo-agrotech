@@ -17,7 +17,7 @@ def ejecutar_extraccion():
     
     # Archivos Excel (ODEPA)
     ARCHIVOS_EXCEL = [
-        "tomate-precio-consumidor_semanal_202501-202552.xlsx",
+        "tomate-precio-consumidor_semanal_202502-202552.xlsx",
         "papa-precio-consumidor_semanal_202502-202552.xlsx"
     ]
     
