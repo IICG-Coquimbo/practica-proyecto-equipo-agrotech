@@ -1,49 +1,193 @@
 services:
+  # Contenedor principal con Jupyter, Spark y entorno visual
   workspace:
-    build: .
-    container_name: BigData_workspace
+    build: .                      # Construye la imagen usando el Dockerfile local
+    container_name: bigdata_workspace
+    platform: linux/amd64
+
     ports:
-      - "8888:8888"   # Jupyter Lab
-      - "6080:6080"   # Visualizador del Scraper (VNC)
-      - "4040:4040"   # Spark UI
+      - "8888:8888"               # Jupyter Lab
+      - "4040:4040"               # Interfaz web de Spark
+      - "5900:5900"               # Acceso VNC al escritorio
+      - "6080:6080"               # Acceso noVNC desde navegador
+
     volumes:
-      - .:/home/jovyan/work
+      - .:/home/jovyan/work       # Monta la carpeta del proyecto dentro del contenedor
+
     environment:
+      - JUPYTER_TOKEN=            # Desactiva token de acceso
+      - JUPYTER_PASSWORD=         # Desactiva contraseña
+      - JUPYTER_ALLOW_INSECURE_WRITES=true  # Permite escritura en volúmenes montados
+      - DISPLAY=:99               # Pantalla virtual usada por el entorno gráfico
+
+      # --- AGREGADO ---
+      # Fuerza el uso de JupyterLab de forma explícita
       - JUPYTER_ENABLE_LAB=yes
+
+      # --- OPCIONAL ---
+      # Puedes guardar aquí una cadena Atlas para usarla desde Python si quieres
+      # OJO: también puedes ponerla en un archivo .env para no exponer credenciales
+      # - MONGO_ATLAS_URI=mongodb+srv://usuario:password@cluster0.mongodb.net/?retryWrites=true&w=majority
+
+    shm_size: "2gb"               # Evita fallos del navegador por poca memoria compartida
+
+    depends_on:
+      - database
+      - admin-db
+      - admin-db-atlas            # --- AGREGADO --- hace que también espere el visualizador de Atlas
+
+    # --- AGREGADO ---
+    # DNS de Google. Puede ayudar con resolución de nombres,
+    # especialmente si usas conexiones mongodb+srv:// hacia Atlas
     dns:
       - 8.8.8.8
-    user: root
+
+    # --- AGREGADO ---
+    # Reinicia automáticamente si el contenedor falla
     restart: always
+
+    # --- AGREGADO ---
+    # Conectamos este servicio a una red personalizada
     networks:
       - bigdata_net
 
-  visualizer:
-    image: mongo-express
-    container_name: BigData_Visualizer
+  # Contenedor de base de datos MongoDB LOCAL
+  database:
+    image: mongo:latest
+    container_name: bigdata_mongodb
+    platform: linux/amd64
     ports:
-      - "8081:8081"   # Mongo Express
-    environment:
-      - ME_CONFIG_MONGODB_URL=mongodb+srv://agrotech_sebastiancastillo:agrotechbigdata2026@cluster0.7z77rka.mongodb.net/BigData_UCN?retryWrites=true&w=majority
-      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
-      - VC_NODE_TLS_REJECT_UNAUTHORIZED=0
-    dns:
-      - 8.8.8.8
+      - "27017:27017"             # Puerto de MongoDB local
+
+    volumes:
+      - mongo_data:/data/db       # Guarda los datos de forma persistente
+
+    # --- AGREGADO ---
     restart: always
+
+    # --- AGREGADO ---
     networks:
       - bigdata_net
 
+  # Interfaz web para visualizar la base de datos LOCAL en puerto 8081
+  admin-db:
+    image: mongo-express:latest
+    container_name: bigdata_ui_local
+    restart: always
+    ports:
+      - "8081:8081"
+    environment:
+      # Se conecta al servicio 'database' definido arriba
+      - ME_CONFIG_MONGODB_URL=mongodb://database:27017/
+
+      # --- AGREGADO ---
+      # Habilita funciones administrativas en mongo-express
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+
+    depends_on:
+      - database
+
+    # --- AGREGADO ---
+    networks:
+      - bigdata_net
+
+  # --- AGREGADO ---
+  # Interfaz web para visualizar MongoDB Atlas en puerto 8082
+  admin-db-atlas:
+    image: mongo-express:latest
+    container_name: bigdata_ui_atlas
+    restart: always
+    ports:
+      - "8082:8081"
+    environment:
+      # --- IMPORTANTE ---
+      # Reemplaza usuario, password y cluster por tus datos reales de Atlas
+      # --- AGREGADO ---
+      # Habilita funciones administrativas en mongo-express
+      - ME_CONFIG_MONGODB_URL=mongodb+srv://usuario:password@cluster0.kthdyh1.mongodb.net/?retryWrites=true&w=majority
+      - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
+
+      # --- OPCIONAL ---
+      # Solo usar si mongo-express presenta problemas de certificados TLS/SSL con Atlas
+      # No se recomienda dejarlo activo salvo necesidad real
+      # - VC_NODE_TLS_REJECT_UNAUTHORIZED=0
+
+    # --- AGREGADO ---
+    # DNS explícito para mejorar resolución SRV de MongoDB Atlas
+    dns:
+      - 8.8.8.8
+
+    # --- AGREGADO ---
+    networks:
+      - bigdata_net
+
+  # --- OPCIONAL / AGREGADO ---
+  # Explorador de archivos del proyecto desde el navegador
+  # Útil si quieres revisar notebooks, scripts y carpetas visualmente
   filebrowser:
     image: filebrowser/filebrowser
-    container_name: BigData_FileBrowser
+    container_name: bigdata_filebrowser
+    restart: always
     ports:
-      - "8082:80"     # Gestor de archivos
+      - "8083:80"
     volumes:
       - .:/srv
-    restart: always
+
+    # --- AGREGADO ---
     networks:
       - bigdata_net
 
+# Volumen persistente para MongoDB LOCAL
+volumes:
+  mongo_data:
+
+# --- AGREGADO ---
+# Red personalizada para que todos los servicios se comuniquen de forma más ordenada
 networks:
   bigdata_net:
     driver: bridge
     name: BigData_Network_UCN
+
+# -------------------------------------------------------------------
+# COSAS QUE PODRÍAS ELIMINAR SI EN ALGÚN MOMENTO USAS SOLO ATLAS
+# -------------------------------------------------------------------
+
+# Si en el futuro quisieras trabajar SOLO con Atlas, podrías comentar o eliminar:
+#
+# 1) El servicio database:
+#
+# database:
+#   image: mongo:latest
+#   container_name: bigdata_mongodb
+#   platform: linux/amd64
+#   ports:
+#     - "27017:27017"
+#   volumes:
+#     - mongo_data:/data/db
+#
+# 2) El servicio admin-db (el visualizador de Mongo LOCAL):
+#
+# admin-db:
+#   image: mongo-express:latest
+#   container_name: bigdata_ui_local
+#   ports:
+#     - "8081:8081"
+#   environment:
+#     - ME_CONFIG_MONGODB_URL=mongodb://database:27017/
+#
+# 3) El volumen local mongo_data:
+#
+# volumes:
+#   mongo_data:
+#
+# 4) En workspace, el depends_on hacia database y admin-db:
+#
+# depends_on:
+#   - database
+#   - admin-db
+#   - admin-db-atlas
+#
+# podría quedar solo así:
+#
+# depends_on:
+#   - admin-db-atlas
