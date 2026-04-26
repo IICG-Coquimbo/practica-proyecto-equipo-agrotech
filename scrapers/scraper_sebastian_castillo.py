@@ -50,7 +50,7 @@ def ejecutar_extraccion():
                     precio = float(str(fila["Precio promedio"]).replace('.', '').replace(',', '.'))
                     datos_finales.append({
                         "integrante": NOMBRE_INTEGRANTE,
-                        "producto": fila["Producto"],
+                        "etiqueta": fila["Producto"],
                         "mes": MESES_NUM[fila["Fecha inicio"].month],
                         "valor": precio,
                         "fecha_captura": time.strftime("%Y-%m-%d")
@@ -82,7 +82,7 @@ def ejecutar_extraccion():
                                 
                                 datos_finales.append({
                                     "integrante": NOMBRE_INTEGRANTE,
-                                    "producto": producto,
+                                    "etiqueta": producto,
                                     "mes": MESES_ABR.get(abr_mes, abr_mes),
                                     "valor": precio,
                                     "fecha_captura": time.strftime("%Y-%m-%d")
