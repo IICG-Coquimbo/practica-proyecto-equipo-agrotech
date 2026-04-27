@@ -67,7 +67,11 @@ def ejecutar_extraccion():
             continue
 
     return datos_finales
+<<<<<<< HEAD
         datos = ejecutar_extraccion()
         len(datos)
         df = pd.DataFrame(datos)
         df
+=======
+
+>>>>>>> 9f6c75c (Arreglo del Dockerfile y prueba del main.py)

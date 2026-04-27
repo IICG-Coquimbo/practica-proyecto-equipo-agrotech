@@ -14,7 +14,14 @@ def ejecutar_extraccion():
     # --- CONFIGURACIÓN GENERAL ---
     NOMBRE_INTEGRANTE = "Sebastián Castillo"
     NOMBRE_GRUPO = "AgroTech"
+<<<<<<< HEAD
     
+=======
+
+    # FIX: Ruta absoluta a la carpeta del scraper
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+>>>>>>> 9f6c75c (Arreglo del Dockerfile y prueba del main.py)
     # Archivos Excel (ODEPA)
     ARCHIVOS_EXCEL = [
         "tomate-precio-consumidor_semanal_202502-202552.xlsx",
@@ -40,9 +47,16 @@ def ejecutar_extraccion():
 
     # --- PARTE 1: PROCESAMIENTO EXCEL (Tomate y Papa) ---
     for nombre_archivo in ARCHIVOS_EXCEL:
+<<<<<<< HEAD
         try:
             if os.path.exists(nombre_archivo):
                 df = pd.read_excel(nombre_archivo, skiprows=4)
+=======
+        ruta_completa = os.path.join(BASE_DIR, nombre_archivo)  # FIX
+        try:
+            if os.path.exists(ruta_completa):  # FIX
+                df = pd.read_excel(ruta_completa, skiprows=4)  # FIX
+>>>>>>> 9f6c75c (Arreglo del Dockerfile y prueba del main.py)
                 df_step = df[['Fecha inicio', 'Producto', 'Precio promedio']].dropna().copy()
                 df_step['Fecha inicio'] = pd.to_datetime(df_step['Fecha inicio'], dayfirst=True)
                 

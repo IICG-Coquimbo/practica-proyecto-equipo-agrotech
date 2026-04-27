@@ -2,6 +2,10 @@ import os
 import time
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+<<<<<<< HEAD
+=======
+from selenium.webdriver.chrome.service import Service
+>>>>>>> 9f6c75c (Arreglo del Dockerfile y prueba del main.py)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -24,10 +28,18 @@ def ejecutar_extraccion():
     # LIMPIEZA
     os.system("pkill -9 chrome")
     os.system("pkill -9 chromedriver")
+<<<<<<< HEAD
     os.system("pkill -9 brave")
 
     options = Options()
     options.binary_location = "/usr/bin/brave-browser"
+=======
+
+    options = Options()
+    # FIX 1: Se elimina options.binary_location = "/usr/bin/brave-browser"
+    #         Brave no existe en el contenedor Docker. Selenium usará
+    #         google-chrome-stable que sí está instalado en la imagen.
+>>>>>>> 9f6c75c (Arreglo del Dockerfile y prueba del main.py)
 
     options.add_argument("--headless=new")
     options.add_argument("--no-sandbox")
@@ -38,7 +50,15 @@ def ejecutar_extraccion():
     driver = None
 
     try:
+<<<<<<< HEAD
         driver = webdriver.Chrome(options=options)
+=======
+        # FIX 2: Se usa Service() apuntando explícitamente al chromedriver
+        #         instalado en el contenedor via apt (chromium-driver).
+        #         Sin esto, Selenium no sabe dónde buscarlo.
+        service = Service("/usr/local/bin/chromedriver")
+        driver = webdriver.Chrome(service=service, options=options)
+>>>>>>> 9f6c75c (Arreglo del Dockerfile y prueba del main.py)
 
         # =========================
         # INDICE UV

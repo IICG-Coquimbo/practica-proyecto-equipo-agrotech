@@ -19,27 +19,17 @@ RUN apt-get update && apt-get install -y \
     libnss3 \
     libgbm1 \
     libasound2 \
-    unzip \
     sed \
     && mkdir -p /etc/apt/keyrings \
     && wget -qO- https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /etc/apt/keyrings/google-chrome.gpg \
     && echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/google-chrome.gpg] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
     && apt-get update \
-    && apt-get install -y google-chrome-stable \
+    && apt-get install -y google-chrome-stable chromium-driver \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# FIX ChromeDriver: descarga la versión exacta que corresponde a Chrome instalado.
-# El endpoint de Google devuelve el número de versión compatible (ej: 147.0.7727.116)
-# y luego descarga el zip oficial para Linux64.
-RUN CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+\.\d+') \
-    && echo "Chrome version: $CHROME_VERSION" \
-    && wget -q "https://storage.googleapis.com/chrome-for-testing-public/${CHROME_VERSION}/linux64/chromedriver-linux64.zip" -O /tmp/chromedriver.zip \
-    && unzip -q /tmp/chromedriver.zip -d /tmp/ \
-    && mv /tmp/chromedriver-linux64/chromedriver /usr/local/bin/chromedriver \
-    && chmod +x /usr/local/bin/chromedriver \
-    && rm -rf /tmp/chromedriver.zip /tmp/chromedriver-linux64 \
-    && echo "ChromeDriver version: $(chromedriver --version)"
+# Symlink para que Selenium encuentre chromedriver en el PATH
+RUN ln -sf $(which chromedriver) /usr/local/bin/chromedriver
 
 # 2. Instalación de JARs: Versión 10.3.0 (Compatible con Spark 3.5)
 # Limpiamos la carpeta primero para que no queden versiones viejas chocando
@@ -53,10 +43,13 @@ RUN wget https://repo1.maven.org/maven2/org/mongodb/spark/mongo-spark-connector_
     wget https://repo1.maven.org/maven2/org/mongodb/bson/4.11.1/bson-4.11.1.jar -P /usr/local/spark/jars/ && \
     wget https://repo1.maven.org/maven2/org/mongodb/bson-record-codec/4.11.1/bson-record-codec-4.11.1.jar -P /usr/local/spark/jars/
 
-# 3. Librerías de Python para todo el curso (Scraping + Atlas + Spark)
-# NOTA: Eliminamos webdriver-manager para evitar conflictos con ChromeDriver manual
+# 3. Librer�as de Python para todo el curso (Scraping + Atlas + Spark)
 RUN pip install --no-cache-dir --upgrade pip && \
-    pip install --no-cache-dir "pymongo[srv]" dnspython selenium pandas certifi
+    #pip install --no-cache-dir "pymongo[srv]" dnspython certifi selenium webdriver-manager pandas
+    pip install --no-cache-dir "pymongo[srv]" dnspython selenium webdriver-manager pandas certifi
+
+
+    
 
 # Variables del entorno gráfico
 ENV DISPLAY=:99
@@ -71,18 +64,9 @@ COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 # Convierte saltos de línea Windows a Linux y da permisos
 RUN sed -i 's/\r$//' /usr/local/bin/start-vnc.sh && chmod +x /usr/local/bin/start-vnc.sh
 
-# ============================================
-# FIX PERMISOS PARA JUPYTER
-# ============================================
-# Crea los directorios necesarios y da permisos a root
-RUN mkdir -p /home/jovyan/.local/share/jupyter \
-    && mkdir -p /home/jovyan/.jupyter \
-    && mkdir -p /home/jovyan/.ipython \
-    && chown -R jovyan:users /home/jovyan \
-    && chmod -R 755 /home/jovyan
-
 # Puertos del contenedor
 EXPOSE 8888 5900 6080 4040
 
 # Inicia supervisord
+# Iniciamos como root para evitar el error de setuid de la sesión anterior
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"]
