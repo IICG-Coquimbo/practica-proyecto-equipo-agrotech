@@ -104,7 +104,7 @@ services:
       # Reemplaza usuario, password y cluster por tus datos reales de Atlas
       # --- AGREGADO ---
       # Habilita funciones administrativas en mongo-express
-      - ME_CONFIG_MONGODB_URL=mongodb+srv://usuario:password@cluster0.kthdyh1.mongodb.net/?retryWrites=true&w=majority
+      - ME_CONFIG_MONGODB_URL=mongodb+srv://agrotech_sebastiancastillo:agrotechbigdata2026@cluster0.7z77rka.mongodb.net/BigData_UCN?retryWrites=true&w=majority
       - ME_CONFIG_MONGODB_ENABLE_ADMIN=true
 
       # --- OPCIONAL ---
