@@ -12,9 +12,14 @@ def ejecutar_extraccion():
     """
     # --- CONFIGURACIÓN GENERAL ---
     NOMBRE_INTEGRANTE = "Sebastián Castillo"
-    NOMBRE_GRUPO = "AgroTech"
+    fecha_hoy = time.strftime("%Y-%m-%d")
     
-    # Archivos Excel (ODEPA)
+    try:
+        BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    except NameError:
+        BASE_DIR = os.getcwd()
+
+    # Configuración ODEPA
     ARCHIVOS_EXCEL = [
         "tomate-papa-precio-consumidor_semanal_202402-202452.xlsx",
         "tomate-papa-precio-consumidor_semanal_202502-202552.xlsx"
@@ -57,7 +62,7 @@ def ejecutar_extraccion():
                         "variedad": fila["Variedad"],
                         "calidad": fila["Calidad"],
                         "lugar_monitoreo": fila["Tipo punto monitoreo"],
-                        "fecha": f.strftime("%d-%m-%Y"),
+                        "fecha": f.strftime("%Y-%m-%d"),
                         "mes": MESES_NUM[f.month],
                         "año": f.year,
                         "precio": precio,
@@ -107,3 +112,23 @@ def ejecutar_extraccion():
         except Exception as e: print(f"❌ Error IndexMundi {fertilizante}: {e}")
 
     return datos_finales
+
+# --- BLOQUE DE VISUALIZACIÓN ---
+if __name__ == "__main__":
+    resultados = ejecutar_extraccion()
+    df_total = pd.DataFrame(resultados)
+
+    # Configuración para consola
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', 1000)
+
+    print("\n" + "="*80)
+    print("MUESTRA DE REGISTROS (ODEPA)")
+    print("="*80)
+    print(df_total[df_total['producto'].notna()].head(5).to_string(index=False))
+
+    print("\n" + "="*80)
+    print("MUESTRA DE REGISTROS (INDEXMUNDI - PRECIOS ENTEROS)")
+    print("="*80)
+    print(df_total[df_total['fertilizante'].notna()].head(10).to_string(index=False))
+    print("="*80)
