@@ -1,0 +1,27 @@
+# --- Jupyter Notebooks ---
+# Ignora la carpeta de checkpoints que genera Jupyter automáticamente
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# --- R History ---
+# Ignora el historial de comandos de R
+.Rhistory
+.RData
+.Ruserdata
+
+# --- Python ---
+# Carpetas de caché de compilación de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- Entornos Virtuales (Por si acaso usas uno local) ---
+.venv/
+venv/
+env/
+.env
+
+# --- Sistema Operativo ---
+# Archivos basura de Windows y Mac
+Thumbs.db
+.DS_Store
