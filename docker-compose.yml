@@ -57,7 +57,7 @@ services:
     container_name: bigdata_mongodb
     platform: linux/amd64
     ports:
-      - "27017:27017"             # Puerto de MongoDB local
+      - "28000:27017"            # Puerto de MongoDB local
 
     volumes:
       - mongo_data:/data/db       # Guarda los datos de forma persistente
