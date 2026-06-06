@@ -1,110 +1,173 @@
-import os
-import time
-import certifi
-from selenium import webdriver
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.common.by import By
-from pymongo import MongoClient
+from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
+from scrapers import scraper_alejandro_nunez
+from scrapers import scraper_lissette_mathieu
+from scrapers import scraper_gabriel_tenorio
+from scrapers import scraper_maximiliano_berrios
+from scrapers import scraper_mathieus_villavicencio
+from scrapers import scraper_sebastian_castillo
 
-# --- 1. IMPORTACIÓN DE TUS SCRAPERS ---
-# Asegúrate de que los archivos en /scrapers se llamen S1.py, S2.py, etc.
-from scrapers.S1 import scraper_tiendanimal
-from scrapers.S2 import scraper_kiwoko
-from scrapers.S3 import scraper_zooplus
-from scrapers.S4 import scraper_amazon_mascotas
-from scrapers.S5 import scraper_miscota
-from scrapers.S6 import scraper_bitiba
-from scrapers.S7 import scraper_superzoo
+# ═══════════════════════════════════════════════════════════════════
+# CONFIGURACIÓN MONGODB
+# ═══════════════════════════════════════════════════════════════════
+MONGO_URI        = "mongodb+srv://agrotech_sebastiancastillo:agrotechbigdata2026@cluster0.7z77rka.mongodb.net/?appName=Cluster0"
+MONGO_DATABASE   = "db_g9agrotech"
+MONGO_COLLECTION = "raw_data"
 
-# --- 2. LIMPIEZA DE PROCESOS ---
-try:
-    os.system("pkill -9 chrome")
-    os.system("pkill -9 chromedriver")
-    os.system("rm -rf /tmp/.com.google.Chrome.*")
-    os.system("rm -rf /tmp/.org.chromium.Chromium.*")
-    print("🧹 Limpieza de procesos y temporales completada.")
-except:
-    pass
+print("=" * 70)
+print("🚀 AGROTECH - INTEGRACIÓN BIG DATA")
+print("=" * 70)
 
-# --- 3. CONFIGURACIÓN DEL DRIVER ---
-options = Options()
-options.binary_location = "/usr/bin/google-chrome"
-
-options.add_argument("--no-sandbox")
-options.add_argument("--disable-dev-shm-usage")
-options.add_argument("--disable-gpu")
-options.add_argument("--disable-software-rasterizer")
-options.add_argument("--window-size=1920,1080")
-options.add_argument("--remote-debugging-port=9222")
-options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-
-driver = None
-datos_totales = []
+# ═══════════════════════════════════════════════════════════════════
+# PASO 1: EXTRACCIÓN DE DATOS
+# ═══════════════════════════════════════════════════════════════════
+print("\n📊 EXTRAYENDO DATOS DE SCRAPERS...")
 
 try:
-    # Iniciar Navegador
-    driver = webdriver.Chrome(options=options)
-    print("🚀 Navegador iniciado correctamente.")
-
-    # --- 4. EJECUCIÓN COLECTIVA ---
-    print("🔍 Iniciando extracción masiva de rubro Mascotas...")
-    
-    # Ejecutamos cada scraper y extendemos la lista maestra
-    # Nota: Se pasa 'By' para que los scrapers lo usen internamente
-    try:
-        datos_totales.extend(scraper_tiendanimal(driver, By, paginas=15))
-        print(f"✅ Tiendanimal completado.")
-        
-        #datos_totales.extend(scraper_kiwoko(driver, By, paginas=15))
-        #print(f"✅ Kiwoko completado.")
-        
-          
-        #datos_totales.extend(scraper_amazon_mascotas(driver, By, paginas=15))
-        #print(f"✅ Amazon completado.")
-
-        #datos_totales.extend(scraper_zooplus(driver, By, paginas=1))
-        #print(f"✅ Zooplus completado.")
-        
-        #datos_totales.extend(scraper_bitiba(driver, By, paginas=10))
-        #print(f"✅ Bitiba completado.")
-        
-        #datos_totales.extend(scraper_miscota(driver, By, paginas=10))
-        #print(f"✅ Miscota completado.")
-
-        #datos_totales.extend(scraper_superzoo(driver, By, paginas=10))
-        #print(f"✅ Superzoo.")
-        
-    except Exception as e:
-        print(f"⚠️ Error durante la extracción de alguna fuente: {e}")
-
-    print(f"📊 Total capturado: {len(datos_totales)} registros.")
-
-    # --- 5. CARGA EN MONGO ATLAS ---
-    if datos_totales:
-        uri = "mongodb+srv://profe_vannessa:Ejemplo123@cluster0.kthdyh1.mongodb.net/?retryWrites=true&w=majority"
-        
-        client = MongoClient(uri, tlsCAFile=certifi.where(), serverSelectionTimeoutMS=5000)
-        
-        try:
-            # Validar conexión
-            client.server_info() 
-            db = client["ProyectoSemana9"]
-            coleccion = db["Alimento_Mascotas_Raw"]
-            
-            print("📤 Subiendo datos a MongoDB Atlas...")
-            coleccion.insert_many(datos_totales)
-            print("✅ ¡Éxito! Datos cargados en la nube.")
-            
-        except Exception as e:
-            print(f"❌ Error de conexión o subida a MongoDB: {e}")
-    else:
-        print("Empty 📭: No se recolectaron datos para subir.")
-
+    data_ale      = scraper_alejandro_nunez.ejecutar_extraccion()
+    print(f"  ✓ Alejandro Núñez:        {len(data_ale)} registros")
 except Exception as e:
-    print(f"❌ Error crítico en el sistema: {e}")
+    print(f"  ✗ Alejandro Núñez:        ERROR - {e}")
+    data_ale = []
 
-finally:
-    # El cierre del driver SIEMPRE debe ir al final de todo el proceso
-    if driver:
-        driver.quit()
-        print("🔒 Navegador cerrado correctamente.")
+try:
+    data_lissette = scraper_lissette_mathieu.ejecutar_extraccion()
+    print(f"  ✓ Lissette Mathieu:       {len(data_lissette)} registros")
+except Exception as e:
+    print(f"  ✗ Lissette Mathieu:       ERROR - {e}")
+    data_lissette = []
+
+try:
+    data_gabriel  = scraper_gabriel_tenorio.ejecutar_extraccion()
+    print(f"  ✓ Gabriel Tenorio:        {len(data_gabriel)} registros")
+except Exception as e:
+    print(f"  ✗ Gabriel Tenorio:        ERROR - {e}")
+    data_gabriel = []
+
+try:
+    data_maxi     = scraper_maximiliano_berrios.ejecutar_extraccion()
+    print(f"  ✓ Maximiliano Berrios:    {len(data_maxi)} registros")
+except Exception as e:
+    print(f"  ✗ Maximiliano Berrios:    ERROR - {e}")
+    data_maxi = []
+
+try:
+    data_mathieus = scraper_mathieus_villavicencio.ejecutar_extraccion()
+    print(f"  ✓ Mathieus Villavicencio: {len(data_mathieus)} registros")
+except Exception as e:
+    print(f"  ✗ Mathieus Villavicencio: ERROR - {e}")
+    data_mathieus = []
+
+try:
+    data_seba     = scraper_sebastian_castillo.ejecutar_extraccion()
+    print(f"  ✓ Sebastián Castillo:     {len(data_seba)} registros")
+except Exception as e:
+    print(f"  ✗ Sebastián Castillo:     ERROR - {e}")
+    data_seba = []
+
+total_registros = (len(data_ale) + len(data_lissette) + len(data_gabriel) + 
+                   len(data_maxi) + len(data_mathieus) + len(data_seba))
+
+print(f"\n📈 TOTAL DE REGISTROS EXTRAÍDOS: {total_registros}")
+
+if total_registros == 0:
+    print("\n⚠️  No hay datos para procesar. Terminando...")
+    exit(0)
+
+# ═══════════════════════════════════════════════════════════════════
+# PASO 2: INICIALIZACIÓN DE SPARK
+# ═══════════════════════════════════════════════════════════════════
+print("\n⚡ INICIANDO SPARK SESSION...")
+
+spark = SparkSession.builder \
+    .appName("IntegradoraBigDataAgroTech") \
+    .config("spark.jars.packages", "org.mongodb.spark:mongo-spark-connector_2.12:10.4.0") \
+    .config("spark.mongodb.write.connection.uri", MONGO_URI) \
+    .config("spark.mongodb.write.database",       MONGO_DATABASE) \
+    .config("spark.mongodb.write.collection",     MONGO_COLLECTION) \
+    .getOrCreate()
+
+print("  ✓ Spark Session iniciada")
+
+# ═══════════════════════════════════════════════════════════════════
+# PASO 3: CONVERSIÓN A DATAFRAMES
+# ═══════════════════════════════════════════════════════════════════
+print("\n🔄 CONVIRTIENDO DATOS A DATAFRAMES...")
+
+# Usamos inferencia automática de schema (más flexible)
+df_ale      = spark.createDataFrame(data_ale)      if data_ale      else None
+df_lissette = spark.createDataFrame(data_lissette) if data_lissette else None
+df_gabriel  = spark.createDataFrame(data_gabriel)  if data_gabriel  else None
+df_maxi     = spark.createDataFrame(data_maxi)     if data_maxi     else None
+df_mathieus = spark.createDataFrame(data_mathieus) if data_mathieus else None
+df_seba     = spark.createDataFrame(data_seba)     if data_seba     else None
+
+print("  ✓ DataFrames creados")
+
+# ═══════════════════════════════════════════════════════════════════
+# PASO 4: UNIÓN DE DATAFRAMES
+# ═══════════════════════════════════════════════════════════════════
+print("\n🔗 UNIENDO DATAFRAMES...")
+
+# Recolectamos solo los DataFrames que NO son None
+dfs_validos = []
+if df_ale is not None:      dfs_validos.append(df_ale)
+if df_lissette is not None: dfs_validos.append(df_lissette)
+if df_gabriel is not None:  dfs_validos.append(df_gabriel)
+if df_maxi is not None:     dfs_validos.append(df_maxi)
+if df_mathieus is not None: dfs_validos.append(df_mathieus)
+if df_seba is not None:     dfs_validos.append(df_seba)
+
+if len(dfs_validos) == 0:
+    print("  ✗ No hay DataFrames válidos para unir")
+    spark.stop()
+    exit(1)
+
+# Unión flexible: permite columnas faltantes entre DataFrames
+df_final = dfs_validos[0]
+for df in dfs_validos[1:]:
+    df_final = df_final.unionByName(df, allowMissingColumns=True)
+
+print(f"  ✓ DataFrames unidos: {df_final.count()} registros totales")
+
+# ═══════════════════════════════════════════════════════════════════
+# PASO 5: MOSTRAR SCHEMA Y PREVIEW
+# ═══════════════════════════════════════════════════════════════════
+print("\n📋 SCHEMA DEL DATAFRAME UNIFICADO:")
+df_final.printSchema()
+
+print("\n👀 PREVIEW DE DATOS (primeras 5 filas):")
+df_final.show(5, truncate=False)
+
+# ═══════════════════════════════════════════════════════════════════
+# PASO 6: ESCRITURA A MONGODB
+# ═══════════════════════════════════════════════════════════════════
+print("\n💾 ESCRIBIENDO A MONGODB...")
+
+try:
+    df_final.write \
+        .format("mongodb") \
+        .mode("append") \
+        .option("database",   MONGO_DATABASE) \
+        .option("collection", MONGO_COLLECTION) \
+        .save()
+    
+    print(f"  ✓ Datos escritos exitosamente")
+    print(f"  📍 Database:   {MONGO_DATABASE}")
+    print(f"  📍 Collection: {MONGO_COLLECTION}")
+    print(f"  📍 Registros:  {df_final.count()}")
+    
+except Exception as e:
+    print(f"  ✗ ERROR AL ESCRIBIR EN MONGODB:")
+    print(f"     {e}")
+    spark.stop()
+    exit(1)
+
+# ═══════════════════════════════════════════════════════════════════
+# PASO 7: FINALIZACIÓN
+# ═══════════════════════════════════════════════════════════════════
+print("\n" + "=" * 70)
+print("✅ PROCESO COMPLETADO EXITOSAMENTE")
+print("=" * 70)
+
+spark.stop()
