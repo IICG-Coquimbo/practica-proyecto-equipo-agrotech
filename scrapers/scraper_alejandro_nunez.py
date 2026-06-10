@@ -11,7 +11,7 @@ def ejecutar_extraccion():
     en una sola estructura de datos.
     """
     # --- CONFIGURACIÓN GENERAL ---
-    NOMBRE_INTEGRANTE = "Sebastián Castillo"
+    NOMBRE_INTEGRANTE = "Alejandro Nuñez"
     fecha_hoy = time.strftime('%Y-%m-%d %H:%M:%S')
     
     try:
@@ -19,16 +19,16 @@ def ejecutar_extraccion():
     except NameError:
         BASE_DIR = os.getcwd()
 
-    # Configuración ODEPA
+    # Configuración ODEPA (Limón/Naranja)
     ARCHIVOS_EXCEL = [
-        "tomate-papa-precio-consumidor_semanal_202402-202452.xlsx",
-        "tomate-papa-precio-consumidor_semanal_202502-202552.xlsx"
+        "2024_precio-consumidor_semanal_limon_naranjas_202402-202452.xlsx",
+        "2025_precio-consumidor_semanal_limon_naranjas_202502-202552.xlsx"
     ]
     
-    # Configuración IndexMundi (Solo Potasio y Urea)
+    # Configuración IndexMundi (DAP y Fosforita)
     URLS_WEB = {
-        "Cloruro de potasio": "https://www.indexmundi.com/es/precios-de-mercado/?mercancia=cloruro-de-potasio&meses=240&moneda=clp",
-        "Urea": "https://www.indexmundi.com/es/precios-de-mercado/?mercancia=urea&meses=240&moneda=clp"
+        "Fosfato Diamónico (DAP)": "https://www.indexmundi.com/es/precios-de-mercado/?mercancia=fosfato-diamonico&meses=360&moneda=clp",
+        "Fosforita": "https://www.indexmundi.com/es/precios-de-mercado/?mercancia=fosforita&meses=360&moneda=clp"
     }
 
     # Diccionarios de conversión
@@ -51,8 +51,8 @@ def ejecutar_extraccion():
                 
                 for _, fila in df_step.iterrows():
                     precio_val = fila["Precio promedio"]
-                    # DoubleType (float)
-                    precio = float(precio_val) if isinstance(precio_val, (int, float)) else float(str(precio_val).replace('.', '').replace(',', '.'))
+                    # Convertimos a entero para ODEPA
+                    precio = int(float(precio_val)) if isinstance(precio_val, (int, float)) else int(float(str(precio_val).replace('.', '').replace(',', '.')))
                     f = fila["Fecha inicio"]
                     
                     datos_finales.append({
@@ -69,7 +69,8 @@ def ejecutar_extraccion():
                         "fecha_captura": fecha_hoy
                     })
                 print(f"✅ ODEPA: {nombre_archivo} procesado.")
-            except Exception as e: print(f"❌ Error ODEPA {nombre_archivo}: {e}")
+            except Exception as e: 
+                print(f"❌ Error ODEPA {nombre_archivo}: {e}")
 
     # --- PARTE 2: INDEXMUNDI (WEB) ---
     headers = {"User-Agent": "Mozilla/5.0"}
@@ -91,10 +92,11 @@ def ejecutar_extraccion():
                         
                         if anio in [2024, 2025]:
                             p_raw = celdas[1].get_text(strip=True)
-                            precio = float(p_raw.replace('.', '').replace(',', '.'))
+                            # Convertimos a entero para IndexMundi
+                            precio = int(round(float(p_raw.replace('.', '').replace(',', '.'))))
                             
                             v_raw = celdas[2].get_text(strip=True).replace('%', '')
-                            variacion = float(v_raw.replace(',', '.')) if v_raw and v_raw != "-" else 0.0
+                            variacion = str(v_raw.replace(',', '.')) if v_raw else None
                             
                             nombre_mes = MESES_ABR.get(abr_mes, abr_mes)
                             
@@ -108,6 +110,8 @@ def ejecutar_extraccion():
                                 "fecha_captura": fecha_hoy
                             })
             print(f"✅ IndexMundi: {fertilizante} scrapeado.")
-        except Exception as e: print(f"❌ Error IndexMundi {fertilizante}: {e}")
+        except Exception as e: 
+            print(f"❌ Error IndexMundi {fertilizante}: {e}")
 
     return datos_finales
+
