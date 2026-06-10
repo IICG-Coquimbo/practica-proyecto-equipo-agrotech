@@ -6,11 +6,11 @@ services:
     platform: linux/amd64
 
     ports:
-      - "8888:8888"               # Jupyter Lab
-      - "4040:4040"               # Interfaz web de Spark
+      - "8889:8888"               # Jupyter Lab
+      - "4041:4040"               # Interfaz web de Spark
       - "5900:5900"               # Acceso VNC al escritorio
-      - "6080:6080"               # Acceso noVNC desde navegador
-      - "8501:8501" 		  # Acceso a Streamlite
+      - "6081:6080"               # Acceso noVNC desde navegador
+      - "8502:8501" 		  # Acceso a Streamlite
 
     volumes:
       - .:/home/jovyan/work       # Monta la carpeta del proyecto dentro del contenedor
@@ -70,7 +70,7 @@ services:
     container_name: bigdata_ui_atlas
     restart: always
     ports:
-      - "8082:8081"
+      - "8084:8081"
     environment:
       # REEMPLAZA ESTOS DATOS POR LOS TUYOS REALES DE ATLAS
       - ME_CONFIG_MONGODB_URL=mongodb+srv://usuario:password@cluster0.kthdyh1.mongodb.net/?retryWrites=true&w=majority
